@@ -17,7 +17,7 @@ end
 local function checkFuel()
     local fuel = turtle.getFuelLevel()
     print("Current fuel level: " .. fuel)
-    
+
     -- Check if fuel is low (less than 20)
     if fuel < 20 then
         print("Warning: Low fuel!")
@@ -26,33 +26,86 @@ local function checkFuel()
     return true
 end
 
+local function refuelFromCoal()
+    -- Get the last inventory slot (16 in ComputerCraft)
+    local lastSlot = 16
+
+    -- Check what's in the last slot
+    local item = turtle.getItemDetail(lastSlot)
+
+    -- Verify there's coal in the last slot
+    if not item then
+        print("Error: No item in the last inventory slot!")
+        return false
+    end
+
+    if not item.name:find("coal") then
+        print("Error: No coal in the last inventory slot! Found: " .. item.name)
+        return false
+    end
+
+    -- Get fuel level before refueling
+    local fuelBefore = turtle.getFuelLevel()
+
+    -- Select the last slot and refuel
+    turtle.select(lastSlot)
+    local success, err = turtle.refuel()
+
+    if not success then
+        print("Error: Failed to refuel - " .. err)
+        return false
+    end
+
+    -- Get fuel level after refueling
+    local fuelAfter = turtle.getFuelLevel()
+    local fuelAdded = fuelAfter - fuelBefore
+
+    print("Refuel successful! Added " .. fuelAdded .. " fuel")
+    print("Fuel level: " .. fuelBefore .. " → " .. fuelAfter)
+
+    return true
+end
+
 local function moveForward()
     -- Check fuel before moving
     if not checkFuel() then
-        print("Error: Not enough fuel to continue!")
-        return false
+        print("Attempting to refuel...")
+        if not refuelFromCoal() then
+            print("Error: Not enough fuel to continue!")
+            return false
+        end
     end
-    
+
     -- Check if turtle has a mining tool
     if not hasMiningTool() then
         print("Error: No mining tool equipped!")
         return false
     end
-    
+
     -- Check if there's a block in front
     local success, block = turtle.detect()
-    
-    if success and block then
-        -- If there's a solid block, mine it first
-        turtle.dig()
+
+    if not success then
+        print("Error: Failed to detect block in front!")
+        return false
     end
-    
+
+    if block then
+        -- If there's a solid block, mine it first
+        local digSuccess = turtle.dig()
+        if not digSuccess then
+            print("Error: Failed to dig block - it may be protected or undiggable!")
+            return false
+        end
+    end
+
     -- Now advance forward
     local moveSuccess, err = turtle.forward()
     if not moveSuccess then
         print("Error moving forward: " .. err)
+        return false
     end
-    return moveSuccess, err
+    return true
 end
 
 -- Loop 15 times to move forward and mine blocks
