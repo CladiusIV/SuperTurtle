@@ -1,11 +1,10 @@
 --
--- Just a simple digging turtle.
--- Single command turtle, fast 2 block mining.
+-- just a simple digging turtle.
+-- tunnel turtle.
 --
 
 -- how many blocks to mine forward.
-local mineLength = 20
-
+local mineLength = 30
 local function moveForward()
     -- Check if there's a block in front
     local hasBlock = turtle.detect()
@@ -22,7 +21,21 @@ local function moveForward()
             return false
         end
         turtle.digUp()
-        print("Mined block successfully")
+        turtle.turnLeft();
+        turtle.dig();
+        turtle.turnRight();
+        turtle.turnRight();
+        turtle.dig();
+        turtle.turnLeft();
+        turtle.up()
+        turtle.turnLeft()
+        turtle.dig();
+        turtle.turnRight();
+        turtle.turnRight();
+        turtle.dig();
+        turtle.down()
+        turtle.turnLeft();
+        print("Mined blocks successfully")
     else
         print("No block in front, moving forward")
     end
