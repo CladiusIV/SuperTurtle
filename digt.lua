@@ -1,10 +1,34 @@
 --
 -- just a simple digging turtle.
--- tunnel turtle.
+-- tunnel digging turtle.
 --
 
 -- how many blocks to mine forward.
-local mineLength = 30
+local args = { ... }
+local mineLength = tonumber(args[1]) or 5
+
+local function digging()
+    -- Dig up and to the sides as well, to clear the path
+    turtle.turnLeft();
+    turtle.dig()
+    turtle.turnRight();
+    turtle.turnRight();
+    turtle.dig()
+    turtle.turnLeft();
+end
+
+local function diggingUp()
+    turtle.digUp()
+    turtle.up()
+    turtle.turnLeft()
+    turtle.dig()
+    turtle.turnRight();
+    turtle.turnRight();
+    turtle.dig()
+    turtle.turnLeft();
+    turtle.down()
+end
+
 local function moveForward()
     -- Check if there's a block in front
     local hasBlock = turtle.detect()
@@ -20,22 +44,10 @@ local function moveForward()
             print("Failed to dig - may be protected or undiggable" .. (digData and digData.name or " unknown block"))
             return false
         end
-        turtle.digUp()
-        turtle.turnLeft();
-        turtle.dig();
-        turtle.turnRight();
-        turtle.turnRight();
-        turtle.dig();
-        turtle.turnLeft();
-        turtle.up()
-        turtle.turnLeft()
-        turtle.dig();
-        turtle.turnRight();
-        turtle.turnRight();
-        turtle.dig();
-        turtle.down()
-        turtle.turnLeft();
-        print("Mined blocks successfully")
+
+        -- TODO - add a check to see if there's actually a block up or to the sides before trying to dig, to avoid unnecessary fuel usage
+        digging()
+        diggingUp()
     else
         print("No block in front, moving forward")
     end
