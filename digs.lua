@@ -1,53 +1,114 @@
 --
--- just a simple digging turtle.
--- downstairs turtle.
+-- 3-block wide descending staircase digging turtle.
+-- Creates stairs: 3 blocks wide, steps down every 1 block forward
 --
 
 -- how many blocks to mine forward.
 local mineLength = 30
-local function moveForward()
-    -- Check if there's a block in front
-    local hasBlock = turtle.detect()
+local stairWidth = 3
 
-    if hasBlock then
-        -- There IS a block, so we need to dig it
-        print("Block detected, fuel level: " .. turtle.getFuelLevel())
-
-        local digSuccess, digData = turtle.dig()
-
-        print("Dig result: " .. tostring(digSuccess), digData and digData.name or "no data")
-        if not digSuccess then
-            print("Failed to dig - may be protected or undiggable" .. (digData and digData.name or " unknown block"))
-            return false
-        end
-        turtle.digUp()
-        turtle.turnLeft();
-        turtle.dig();
-        turtle.turnRight();
-        turtle.turnRight();
-        turtle.dig();
-        turtle.turnLeft();
-        print("Mined block successfully")
-    else
-        print("No block in front, moving forward")
+-- Mine 3 blocks wide at current position
+local function mineWidth()
+    print("Mining 3 blocks wide...")
+    
+    -- Mine center block
+    if turtle.detect() then
+        turtle.dig()
     end
+    
+    -- Mine left block
+    turtle.turnLeft()
+    if turtle.detect() then
+        turtle.dig()
+    end
+    turtle.turnRight()
+    
+    -- Mine right block
+    turtle.turnRight()
+    if turtle.detect() then
+        turtle.dig()
+    end
+    turtle.turnLeft()
+    
+    print("Width cleared")
+end
 
-    -- Now advance forward
-    local moveSuccess, err = turtle.forward()
+local function digging(i)
+    turtle.dig()
+    turtle.turnLeft()
+    turtle.dig()
+    turtle.turnRight()
+    turtle.turnRight()
+    turtle.dig()
+    turtle.turnLeft()
+end
+
+local function diggingUp()
+    turtle.digUp()
+    turtle.up()
+    turtle.turnLeft()
+    turtle.dig()
+    turtle.turnRight()
+    turtle.turnRight()
+    turtle.dig()
+    turtle.turnLeft()
+    turtle.down()
+end
+
+local function goForward(i)
+    local moveSuccess = turtle.forward()
     if not moveSuccess then
-        print("Error moving forward: " .. (err or "unknown reason"))
+        print("ERROR: Could not move forward at step " .. i)
+    end
+    
+    print("Moved forward")
+end
+-- Mine down and move to next step
+local function stepDown()
+    print("Stepping down...")
+    
+    -- Mine block below
+    turtle.digDown()
+    
+    -- Move down
+    local moveSuccess = turtle.down()
+    if not moveSuccess then
+        print("ERROR: Could not move down!")
         return false
     end
+    
+    print("Stepped down successfully")
     return true
 end
 
--- Loop mineLength times to move forward and mine blocks
+-- Main staircase loop
+print("Starting 3-block wide downstairs mining...")
+print("Fuel level: " .. turtle.getFuelLevel())
+
 for i = 1, mineLength do
-    local successInfo, dataInfo = turtle.inspect()
-    if moveForward() then
-        print("Moved block " .. i .. " of " .. mineLength .. ". " .. (dataInfo.name or "unknown block"))
-    else
-        print("Failed to move - stopping: " .. (dataInfo.name or "unknown reason"))
+    print("\n--- Step " .. i .. " of " .. mineLength .. " ---")
+    
+    -- Check fuel
+    if turtle.getFuelLevel() < 50 then
+        print("WARNING: Low fuel level: " .. turtle.getFuelLevel())
+    end
+    
+    -- Mine width at current position
+    digging(i)
+    
+    -- Try to move forward
+    -- if turtle.detect() then
+    --     turtle.dig()
+    -- end
+    goForward(i)
+    digging(i)
+    diggingUp()
+    
+    -- Step down for next level
+    if not stepDown() then
         break
     end
 end
+
+print("\nDownstairs mining complete!")
+print("Final fuel level: " .. turtle.getFuelLevel())
